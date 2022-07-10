@@ -19,8 +19,8 @@ bool dfs(int x,int y,int S[][N],bool L[][N],bool C[][N]){
 int S[N][N];
 bool L[N][N],C[N][N];
 int main(){
-    scanf("%d",&n);
-    for(int i=1;i<n;i++){
+    scanf("%d%d",&n,&m);
+    for(int i=1;i<=m;i++){
         int x,y; scanf("%d%d",&x,&y);
         scanf("%d",&S[x][y]);
         L[x][S[x][y]]=C[y][S[x][y]]=1;
