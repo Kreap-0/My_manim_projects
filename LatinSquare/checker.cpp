@@ -4,6 +4,7 @@ const int N=203;
 int n,m,S[N][N],c[N],a[N][N];
 int main(){
     freopen("ex_output.txt","r",stdin);
+    freopen("checker.out","w",stdout);
     scanf("%d %d",&n,&m);
     for(int i=1;i<=m;i++){
         int x,y,z; scanf("%d%d",&x,&y);
