@@ -2,7 +2,7 @@
 
 const int N=10;
 
-int n;
+int n,m;
 bool dfs(int x,int y,int S[][N],bool L[][N],bool C[][N]){
     if(S[x][y]) return dfs(x,y+1,S,L,C);
     if(y==n+1) return dfs(x+1,1,S,L,C);
@@ -19,6 +19,7 @@ bool dfs(int x,int y,int S[][N],bool L[][N],bool C[][N]){
 int S[N][N];
 bool L[N][N],C[N][N];
 int main(){
+    freopen("ex_input.txt","r",stdin);
     scanf("%d%d",&n,&m);
     for(int i=1;i<=m;i++){
         int x,y; scanf("%d%d",&x,&y);
