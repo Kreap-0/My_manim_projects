@@ -1,24 +1,15 @@
-from asyncore import write
-from re import M
-from turtle import left
-from venv import create
 from manim import *
-from scipy.fftpack import shift
 
 class LatinSquare(VGroup):
     def __init__(self,n=1,*vmobjects,**kwargs):
-
         super().__init__(*vmobjects,**kwargs)
-
         self.n=n
         self.txt,self.e=[0],[0]
-
         x,y=0,0
         if (n%2)==0:
             x,y=-(n/2)+0.5,(n/2)-0.5
         else:
             x,y=-((n-1)/2),((n-1)/2)
-
         for i in range(n):
             ro=[0]
             for j in range(n):
@@ -28,7 +19,6 @@ class LatinSquare(VGroup):
                 self+=s
                 ro.append(0)
             self.e.append(ro)
-        
         for i in range(n):
             ro=[0]
             for j in range(n):
@@ -514,9 +504,4 @@ class Lemma2(Scene):
         self.wait()
         self.play(Uncreate(Ls1))
         self.wait()
-        
-
-
-# manim -ps LatinSquare.py
-# manim -pql LatinSquare.py
-# manim -qh LatinSquare.py
+		
