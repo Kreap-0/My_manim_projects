@@ -5,10 +5,11 @@ Date: 2022/7/9
 Input Format:
 n: Size of the square
 m: Number of elements already in the square (m<n!!!)
-x y c: An element 'c' in cell (x,y) 
+x y c: An element 'c' in the cell (x,y) 
 */
 
-int deb=0;
+#define deb 1
+// mode options: 1=debug, 0=normal
 
 #include<stdio.h>
 #include<algorithm>
@@ -228,11 +229,11 @@ int main(){
     freopen("ex_input.txt","r",stdin);
     freopen("ex_output.txt","w",stdout);
     int n=read(),m=read();
-    printf("%d %d\n",n,m);
+    if(!deb) printf("%d %d\n",n,m);
     for(int i=1;i<=m;i++){
         int x=read(),y=read();
         S[x][y]=read();
-        printf("%d %d %d\n",x,y,S[x][y]);
+        if(!deb) printf("%d %d %d\n",x,y,S[x][y]);
     }
     solve(n,S);
     print(n,S);
