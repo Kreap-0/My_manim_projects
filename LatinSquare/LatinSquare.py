@@ -1,4 +1,3 @@
-from re import L
 from manim import *
 
 class LatinSquare(VGroup):
@@ -536,13 +535,20 @@ class Simulate(Scene):
         S=VGroup(MathTex("s_1").next_to(Ls[0],LEFT),
                  MathTex("s_2").next_to(Ls[4],LEFT),
                  MathTex("s_3").next_to(Ls[8],LEFT))
+        F=VGroup(MathTex("f_1=1").next_to(Ls[3],RIGHT),
+                 MathTex("f_2=1").next_to(Ls[7],RIGHT),
+                 MathTex("f_3=1").next_to(Ls[11],RIGHT))
         self.play(FadeIn(S))
         self.wait()
-        self.play(FadeOut(S))
+        self.play(FadeIn(F))
+        self.wait()
+        self.play(FadeOut(VGroup(S,F)))
         self.play(Transform(Ls.txt[1][1],Text("4",color=GREY_B).move_to(Ls[0])))
         self.wait(5)
         self.play(Ls.txt[2][4].animate.shift(DOWN),
                   Ls.txt[3][2].animate.shift(DOWN))
+        self.wait()
+        self.play(*[Circumscribe(VGroup(*[Ls[j] for j in range(i*5,(i+1)*4)])) for i in range(4)])
         self.wait()
         self.play(Circumscribe(Ls[0]))
         self.wait()
@@ -565,22 +571,23 @@ class Simulate(Scene):
         Ls2=LatinSquare(n=3)
         Ls2.fill(2,2,3)
         Ls2.fill(3,3,3)
-        self.play(Transform(Ls,Ls2))
+        self.play(Transform(Ls,Ls2,replace_mobject_with_target_in_scene=1))
+        self.remove(Ls)
         self.wait()
-        self.play(Ls.animate.shift(LEFT*3))
+        self.play(Ls2.animate.shift(LEFT*3))
         tmp=[[0,0,0],[0,3,0],[0,0,3]]
         R_txt,C_txt,E_txt=Text("R").move_to(UR),Text("C").move_to(RIGHT),Text("E").move_to(DR)
         self.play(Write(R_txt),Write(C_txt),Write(E_txt))
         RG,CG,EG=VGroup(R_txt),VGroup(C_txt),VGroup(E_txt)
-        for i in range(1,4):
-            for j in range(1,4):
-                tmpR=Text(str(i)).move_to(Ls[(i-1)*3+j-1])
-                tmpC=Text(str(j)).move_to(Ls[(i-1)*3+j-1])
-                tmpE=Text(str(tmp[i-1][j-1])).move_to(Ls[(i-1)*3+j-1])
+        for i in range(3):
+            for j in range(3):
+                tmpR=Text(str(i)).move_to(Ls2[i*3+j])
+                tmpC=Text(str(j)).move_to(Ls2[i*3+j])
+                tmpE=Text(str(tmp[i][j])).move_to(Ls2[i*3+j])
                 self.add(tmpR,tmpC,tmpE)
-                self.play(tmpR.animate.move_to([1+((i-1)*3+j)/2,1,0]),
-                          tmpC.animate.move_to([1+((i-1)*3+j)/2,0,0]),
-                          tmpE.animate.move_to([1+((i-1)*3+j)/2,-1,0]),run_time=0.3)
+                self.play(tmpR.animate.move_to([1+(i*3+j+1)/2,1,0]),
+                          tmpC.animate.move_to([1+(i*3+j+1)/2,0,0]),
+                          tmpE.animate.move_to([1+(i*3+j+1)/2,-1,0]),run_time=0.3)
                 RG+=tmpR
                 CG+=tmpC
                 EG+=tmpE
@@ -588,17 +595,68 @@ class Simulate(Scene):
         self.play((RG-RG[0]).animate.shift(DOWN*2),
                   (EG-EG[0]).animate.shift(UP*2))
         self.wait()
-        Ls2=LatinSquare(n=3)
-        Ls2.fill(3,3,2)
-        Ls2.fill(3,3,3)
+        Ls3=LatinSquare(n=3)
+        Ls3.fill(3,2,2)
+        Ls3.fill(3,3,3)
         self.play(Unwrite(VGroup(RG,CG,EG)))
-        self.play(Transform(Ls,Ls2))
+        self.play(Transform(Ls2,Ls3))
         self.wait()
-        Ls2=LatinSquare(n=3)
-        Ls2.fill(1,1,1)
-        Ls2.fill(1,2,2)
-        Ls2.fill(1,3,3)
-        self.play(Transform(Ls,Ls2))
+        Ls=LatinSquare(n=3)
+        Ls.fill(1,2,2)
+        Ls.fill(1,3,3)
+        self.play(Transform(Ls2,Ls))
+        self.wait()
+        self.play(Ls2.animate.shift(LEFT*2))
+        self.wait()
+        self.play(Ls2.animate.shift(RIGHT*2))
+        self.wait()
+        self.play(Write(Ls2.fill(1,1,1)))
+        self.wait()
+        tmp=[2,3,1]
+        self.play(Write(VGroup(*[Ls2.fill(2,i+1,tmp[i]) for i in range(3)])))
+        self.wait()
+        tmp=[3,1,2]
+        self.play(Write(VGroup(*[Ls2.fill(3,i+1,tmp[i]) for i in range(3)])))
+        self.wait()
+        
+
+class Hungary(Scene):
+    def construct(self):
+        pass
+
+class Network_flow(Scene):
+    def construct(self):
+        self.camera.background_color=GREY_E
+        L,R,mline=VGroup(),VGroup(),VGroup()
+        for i in range(4):
+            tmp=Circle(radius=0.3,color=GRAY_B).move_to(LEFT*3+(1.5-i)*UP*1.2).set_fill(GRAY_B,1)
+            L.add(tmp)
+        for i in range(4):
+            tmp=Circle(radius=0.3,color=GRAY_B).move_to(RIGHT*3+(1.5-i)*UP*1.2).set_fill(GRAY_B,1)
+            R.add(tmp)
+        tmp=[[0,2],[0,1],[3],[0,3]]
+        for i in range(4):
+            for j in tmp[i]:
+                l=Arrow(start=L[i].get_center(),
+                        end=R[j].get_center(),
+                        buff=0.3,
+                        max_tip_length_to_length_ratio=0.05,
+                        stroke_width=2)
+                mline.add(l)
+        S,T=Dot([-6,0,0]),Dot([6,0,0])
+        for i in range(4):
+            l1=Arrow(start=S.get_center(),
+                    end=L[i].get_center(),
+                    buff=0.3,
+                    max_tip_length_to_length_ratio=0.05,
+                    stroke_width=2)
+            l2=Arrow(start=R[i].get_center(),
+                    end=T.get_center(),
+                    buff=0.3,
+                    max_tip_length_to_length_ratio=0.05,
+                    stroke_width=2)
+            mline.add(l1,l2)
+        self.add(L,R,mline,S,T)
 
 # manim -ps LatinSquare.py
 # manim -pql LatinSquare.py
