@@ -705,14 +705,14 @@ class Cover(Scene):
         A.scale(0.8).shift(LEFT*3+DOWN)
         self.add(A)
 
-class Simulate(MovingCameraScene):
+class Simulate1(MovingCameraScene):
     def construct(self):
         self.camera.background_color=GREY_E
         Ls=LatinSquare(4)
         Ls.fill(1,1,2)
         Ls.fill(2,4,3)
         Ls.fill(3,2,3)
-        self.play(Create(Ls))
+        self.play(Create(Ls),run_time=2)
         self.wait(2)
         S=VGroup(MathTex("s_1").next_to(Ls[0],LEFT),
                  MathTex("s_2").next_to(Ls[4],LEFT),
@@ -753,7 +753,10 @@ class Simulate(MovingCameraScene):
         Ls2=LatinSquare(3)
         Ls2.fill(2,2,3)
         Ls2.fill(3,3,3)
-        self.play(Transform(Ls,Ls2,replace_mobject_with_target_in_scene=1))
+        self.play(*[Uncreate(Ls[i]) for i in [0,1,2,3,7,11,15]],
+                  Unwrite(Ls.txt[1][1]))
+        self.play(Ls.animate.shift(UR*0.5))
+        self.add(Ls2)
         self.remove(Ls)
         self.wait()
         self.play(Ls2.animate.shift(LEFT*3))
@@ -789,7 +792,16 @@ class Simulate(MovingCameraScene):
         self.play(VGroup(Ls2.txt[3][2],Ls2.txt[3][3]).animate.shift(UP*2))
         self.wait()
         self.play(self.camera.frame.animate.shift(RIGHT*10))
-        self.wait() # Insert Hungary
+        self.wait()
+
+class Simulate2(MovingCameraScene):
+    def construct(self):
+        self.camera.background_color=GREY_E
+        self.camera.frame.shift(RIGHT*10)
+        Ls2=LatinSquare(3)
+        Ls2.fill(1,2,2)
+        Ls2.fill(1,3,3)
+        self.add(Ls2)
         self.play(self.camera.frame.animate.shift(LEFT*10))
         self.wait()
         Ls1=LatinSquare(3)
@@ -835,9 +847,65 @@ class Simulate(MovingCameraScene):
         for i in range(4):
             for j in range(4):
                 Ls.fill(i+1,j+1,tmp[i][j])
-        Ls2.become(Ls)
+        self.add(Ls)
+        self.remove(Ls2)
         self.wait()
-        #Todo
+        self.play(Write(Ls.fill(2,4,4)))
+        self.play(Ls.txt[2][2].animate.move_to(Ls.txt[2][4]),
+                  Ls.txt[2][4].animate.move_to(Ls.txt[2][2]))
+        self.wait()
+        self.play(Write(Ls.fill(3,4,4)))
+        self.play(Ls.txt[3][3].animate.move_to(Ls.txt[3][4]),
+                  Ls.txt[3][4].animate.move_to(Ls.txt[3][3]))
+        self.wait()
+        self.play(Circumscribe(VGroup(Ls[7],Ls[11])))
+        self.wait()
+        self.play(Ls.txt[2][3].animate.move_to(Ls.txt[2][2]),
+                  Ls.txt[2][2].animate.move_to(Ls.txt[2][3]))
+        self.wait()
+        self.play(Write(Ls.fill(4,4,4)))
+        self.wait()
+        tmp=[4,2,1,3]
+        for i in range(4):
+            self.play(Write(Ls.fill(1,i+1,tmp[i]),run_time=0.5))
+        self.wait()
+        Ls1=LatinSquare(4)
+        tmp=[[4,2,1,3],[3,4,2,1],[1,3,4,2],[2,1,3,4]]
+        for i in range(4):
+            for j in range(4):
+                Ls1.fill(i+1,j+1,tmp[i][j])
+        self.add(Ls1)
+        self.remove(Ls)
+        self.wait()
+        C2=VGroup(*[Ls1.txt[i][2] for i in range(1,5)])
+        C3=VGroup(*[Ls1.txt[i][3] for i in range(1,5)])
+        C4=VGroup(*[Ls1.txt[i][4] for i in range(1,5)])
+        self.play(C3.animate.move_to(C4),
+                  C4.animate.move_to(C3))
+        self.play(C3.animate.move_to(C2),
+                  C2.animate.move_to(C3))
+        self.play(VGroup(*[Ls1.txt[2][i] for i in range(1,5)]).animate.shift(DOWN*2),
+                  VGroup(*[Ls1.txt[3][i] for i in range(1,5)]).animate.shift(UP),
+                  VGroup(*[Ls1.txt[4][i] for i in range(1,5)]).animate.shift(UP))
+        self.wait()
+        Ls=LatinSquare(4)
+        tmp=[[4,1,3,2],[1,4,2,3],[2,3,4,1],[3,2,1,4]]
+        for i in range(4):
+            for j in range(4):
+                Ls.fill(i+1,j+1,tmp[i][j])
+        self.add(Ls)
+        self.remove(Ls1)
+        self.wait()
+        y=[0,4,3,1,2]
+        self.play(*[Transform(Ls.txt[i][i],
+                              Text("2",color=GREY_B).move_to(Ls.txt[i][i])) for i in range(1,5)],
+                  *[Transform(Ls.txt[i][y[i]],
+                              Text("4",color=GREY_B).move_to(Ls.txt[i][y[i]])) for i in range(1,5)])
+        self.wait()
+        self.play(Transform(Ls.txt[1][1],Ls.txt[1][1].copy().set_color(color=BLUE)),
+                  Transform(Ls.txt[2][4],Ls.txt[2][4].copy().set_color(color=BLUE)),
+                  Transform(Ls.txt[3][2],Ls.txt[3][2].copy().set_color(color=BLUE)))
+        self.wait()
 
 class Hungary(MovingCameraScene):
     def construct(self):
