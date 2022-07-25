@@ -4,21 +4,19 @@ class LatinSquare(VGroup):
     def __init__(self,n,*vmobjects,**kwargs):
         super().__init__(*vmobjects,**kwargs)
         self.n=n
-        self.txt,self.e=[0],[0]
+        self.txt,self.e=[0],[[0]*(n+1)]*(n+1)
+        self.L,self.C=[0],[0]
         x,y=0,0
         if (n%2)==0:
             x,y=-(n/2)+0.5,(n/2)-0.5
         else:
             x,y=-((n-1)/2),((n-1)/2)
         for i in range(n):
-            ro=[0]
             for j in range(n):
                 s=Square(side_length=1).move_to([x+j,y-i,0])
                 s.set_stroke(color=GREY_E)
                 s.set_fill(color=GREY_D,opacity=1)
                 self+=s
-                ro.append(0)
-            self.e.append(ro)
         for i in range(n):
             ro=[0]
             for j in range(n):
@@ -26,15 +24,21 @@ class LatinSquare(VGroup):
                 ro.append(txt_tmp)
                 self+=txt_tmp
             self.txt.append(ro)
-
+    def build(self):
+        for i in range(self.n):
+            self.L.append(VGroup())
+            self.C.append(VGroup())
+        for i in range(self.n):
+            for j in range(self.n):
+                self.L[i+1].add(self.txt[i+1][j+1])
+                self.C[j+1].add(self.txt[i+1][j+1])
     def fill(self,x,y,e,txt_color=GREY_B):
         if e==0:
             self.e[x][y]=0
             self.txt[x][y]=Text("")
             return self.txt[x][y]
         else:
-            tmp=Text(str(e),color=txt_color)
-            tmp.move_to(self[(x-1)*self.n+y-1].get_center())
+            tmp=Text(str(e),color=txt_color).move_to(self[(x-1)*self.n+y-1].get_center())
             self.e[x][y]=e
             self.txt[x][y].become(tmp)
             return self.txt[x][y]
@@ -257,9 +261,10 @@ class Hall_intro(Scene):
         x=MathTex(r"x_1",r'\ ',r"x_2",r'\ ',r"x_3",r'\ ',r"\dots",r'\ ',r"x_n").move_to(DOWN*2)
         self.play(FadeIn(x,shift=DOWN))
         self.wait()
-        self.play(Transform(x,MathTex(r"x_1\neq x_2\neq x_3\neq \dots \neq x_n").move_to(DOWN*2)))
+        x_=MathTex(r"{{x_1}}\neq {{x_2}}\neq {{x_3}}\neq {{\dots}} \neq {{x_n}}").move_to(DOWN*2)
+        self.play(TransformMatchingTex(x,x_))
         self.wait()
-        self.play(FadeOut(x),FadeOut(X))
+        self.play(FadeOut(x_),FadeOut(X))
 
         girl,boy,mline=VGroup(),VGroup(),VGroup()
         for i in range(4):
@@ -281,7 +286,7 @@ class Hall_intro(Scene):
             for j in tmp[i]:
                 l=Line(start=girl[i].get_center(),end=boy[j].get_center())
                 mline.add(l)
-        self.play(FadeIn(boy),FadeIn(mline))
+        self.play(FadeIn(boy),Create(mline))
         self.wait()
         for i in [1,3,4,5]:
             self.wait(0.5)
@@ -490,14 +495,17 @@ class Lemma2_1(MovingCameraScene):
         Ls1.fill(3,2,3)
         self.play(Create(Ls1))
         self.wait()
-        Ls2=LatinSquare(4)
-        Ls2.fill(2,1,1)
-        Ls2.fill(3,2,3)
-        Ls2.fill(3,4,2)
-        self.play(Transform(Ls1,Ls2))
+        self.play(FadeOut(VGroup(Ls1.txt[1][1],Ls1.txt[2][4])),
+                  FadeIn(VGroup(Ls1.fill(2,1,1),Ls1.fill(3,4,2))))
         self.wait()
         self.play(Ls1.txt[3][2].animate.shift(UP*2),
                   Ls1.txt[3][4].animate.shift(UP*2))
+        self.wait()
+        Ls=LatinSquare(4)
+        Ls.fill(1,2,3)
+        Ls.fill(1,4,2)
+        Ls.fill(2,1,1)
+        Ls1.become(Ls)
         self.wait()
         tmp=VGroup(
             MathTex(r"r\leq \frac{n}{2}"),
@@ -508,28 +516,28 @@ class Lemma2_1(MovingCameraScene):
         self.wait()
         self.play(Write(tmp[0]),
                   Circumscribe(VGroup(*[Ls1[i] for i in range(8)])))
+        self.wait()
         self.play(Write(tmp[1]))
         self.wait()
         self.play(Write(tmp[2]))
         self.wait()
-        self.play(Unwrite(tmp))
+        self.play(Unwrite(tmp,run_time=0.8))
+        self.play(Ls1.animate.shift(RIGHT*3))
         Ls2=LatinSquare(n=4)
+        Ls2.fill(1,2,3)
+        Ls2.fill(1,4,2)
+        Ls2.fill(2,1,1)
+        self.add(Ls2)
+        self.remove(Ls1)
+        self.wait()
         tmp=[[4,3,1,2],[1,2,3,4],[2,1,4,3],[3,4,2,1]]
-        for i in range(2):
-            for j in range(4):
-                Ls2.fill(i+1,j+1,tmp[i][j])
-        self.play(Transform(Ls1,Ls2))
+        self.play(Write(VGroup(Ls2.fill(1,1,4),Ls2.fill(1,3,1))))
+        self.play(Write(VGroup(*[Ls2.fill(2,i+1,tmp[1][i]) for i in range(1,4)])))
         self.wait()
-        txt=VGroup()
-        for j in range(4):
-            txt+=Ls1.fill(3,j+1,tmp[2][j])
-        self.play(FadeIn(txt))
-        txt=VGroup()
-        for j in range(4):
-            txt+=Ls1.fill(4,j+1,tmp[3][j])
-        self.play(FadeIn(txt))
+        self.play(Write(VGroup(*[Ls2.fill(3,i+1,tmp[2][i]) for i in range(4)])))
+        self.play(Write(VGroup(*[Ls2.fill(4,i+1,tmp[3][i]) for i in range(4)])))
         self.wait()
-        self.play(Uncreate(Ls1))
+        self.play(Uncreate(Ls2))
         self.wait()
 
 class Lemma2_2(MovingCameraScene):
@@ -682,10 +690,97 @@ class Lemma2_2(MovingCameraScene):
                   FadeOut(VGroup(F14),shift=UP))
         self.wait()
 
-class Lemma3(Scene):
+class Lemma3_1(MovingCameraScene):
     def construct(self):
         self.camera.background_color=GREY_E
-        #Todo
+        Ls=LatinSquare(7)
+        Ls.fill(2,2,2)
+        Ls.fill(2,5,7)
+        Ls.fill(3,3,5)
+        Ls.fill(3,5,4)
+        Ls.fill(5,4,5)
+        Ls.fill(7,2,4)
+        tmp,num=[1,2,4,6],[2,2,1,1]
+        s_label=VGroup(*[MathTex(r"s_"+str(i+1)).next_to(Ls[tmp[i]*7],LEFT) for i in range(4)])
+        f_label=VGroup(*[MathTex(r"f_"+str(i+1)+r"="+str(num[i])).next_to(Ls[tmp[i]*7+6],RIGHT) for i in range(4)])
+        self.play(FadeIn(Ls),Write(s_label),Write(f_label))
+        self.wait()
+        basket=VGroup(
+            Line(start=[-1,np.sqrt(3)/3,0],end=LEFT*0.5),
+            Line(start=LEFT*0.5,end=RIGHT*0.5),
+            Line(start=RIGHT*0.5,end=[1,np.sqrt(3)/3,0]),
+            Dot().shift(UP*0.23+LEFT*0.24).scale(3),
+            Dot().shift(UP*0.23+RIGHT*0.24).scale(3)
+        )
+        b=VGroup(*[basket.copy() for _ in range(4)]).arrange_submobjects().shift(UP*4.5)
+        tmp=b[0][4].copy()
+        b[0]-=b[0][4]
+        self.play(*[Create(b[i]) for i in range(4)],
+                  self.camera.frame.animate.shift(UP*2.5))
+        self.wait()
+        tmp_=b[1][4].copy()
+        self.play(Transform(b[1][4],tmp,path_arc=PI))
+        self.play(Transform(b[3][4],tmp_,path_arc=PI))
+        self.wait()
+        self.play(FadeOut(b,shift=UP),
+                  self.camera.frame.animate.shift(DOWN*2.5))
+        self.wait()
+        self.play(Indicate(Ls.txt[2][5]))
+        self.play(Indicate(s_label[0]))
+        self.wait()
+        self.play(Indicate(s_label[0]))
+        self.play(Indicate(f_label[0]))
+        self.wait()
+        Ls.build()
+        self.play(Ls.C[2].animate.shift(LEFT))
+        self.play(Ls.C[5].animate.shift(LEFT*3))
+        self.wait()
+        self.play(VGroup(Ls.L[3],s_label[1],f_label[1]).animate.shift(DOWN*2),
+                  VGroup(Ls.L[5],s_label[2],f_label[2]).animate.shift(UP*2))
+        self.wait()
+        self.play(VGroup(Ls.L[5],s_label[2],f_label[2]).animate.shift(DOWN*3))
+        self.wait()
+        self.play(FadeOut(VGroup(s_label,f_label)),
+                  *[Uncreate(Ls[i]) for i in range(7)],
+                  *[Uncreate(Ls[7*i+6]) for i in range(1,7)],
+                  FadeOut(Ls.txt[2][5]))
+        Ls1=LatinSquare(6).shift(DL*0.5)
+        Ls1.fill(1,1,2)
+        Ls1.fill(4,2,4)
+        Ls1.fill(4,3,5)
+        Ls1.fill(5,4,5)
+        Ls1.fill(6,1,4)
+        self.add(Ls1)
+        self.play(FadeOut(Ls,run_time=0))
+        self.play(Ls1.animate.shift(UR*0.5))
+        self.wait()
+        tmp=[[2,3,4,1,6,5],[5,6,1,4,2,3],[1,2,3,6,5,4],[6,4,5,2,3,1],[3,1,6,5,4,2],[4,5,2,3,1,6]]
+        self.play(*[Write(Ls1.fill(1,i+1,tmp[0][i])) for i in range(1,6)],
+                  *[Write(Ls1.fill(2,i+1,tmp[1][i])) for i in range(6)],
+                  *[Write(Ls1.fill(3,i+1,tmp[2][i])) for i in range(6)],
+                  *[Write(Ls1.fill(4,i+1,tmp[3][i])) for i in [0]+list(range(3,6))],
+                  *[Write(Ls1.fill(5,i+1,tmp[4][i])) for i in [0,1,2,4,5]],
+                  *[Write(Ls1.fill(6,i+1,tmp[5][i])) for i in range(1,6)])
+        self.wait()
+        mv=[RIGHT]*6+[DOWN]*6
+        sq=VGroup(Ls1[0].copy().shift(UP))
+        for i in range(12):
+            sq.add(sq[i].copy().shift(mv[i]))
+        self.play(Create(sq))
+        Ls1.add(sq)
+        self.play(Ls1.animate.shift(DL*0.5))
+        self.wait()
+
+# manim -pqh LatinSquare.py Lemma3_2
+class Lemma3_2(MovingCameraScene):
+    def construct(self):
+        self.camera.background_color=GREY_E
+        tmp=[[2,3,4,1,6,5],[5,6,1,4,2,3],[1,2,3,6,5,4],[6,4,5,2,3,1],[3,1,6,5,4,2],[4,5,2,3,1,6]]
+        Ls=LatinSquare(7)
+        for i in range(1,7):
+            for j in range(6):
+                Ls.fill(i+1,j+1,tmp[i-1][j])
+        self.add(Ls)
 
 class Cover(Scene):
     def construct(self):
@@ -966,7 +1061,7 @@ class Hungary(MovingCameraScene):
                   Transform(t[0],MathTex(r"t_1=4").move_to(t[0])))
         self.wait()
         self.play(Flash(mline[3]))
-        self.play(Transform(mline[3],mline[3].copy().set_color(color=WHITE)),
+        self.play(Transform(mline[3],mline[3].copy().set_color(color=BLUE)),
                   Transform(t[1],MathTex(r"t_2=4").move_to(t[1])))
         self.wait()
         self.play(self.camera.frame.animate.shift(LEFT*15))
@@ -1008,3 +1103,4 @@ class Network_flow(Scene):
 # manim -ps LatinSquare.py
 # manim -pql LatinSquare.py
 # manim -pqh LatinSquare.py
+# manim -pqp LatinSquare.py
