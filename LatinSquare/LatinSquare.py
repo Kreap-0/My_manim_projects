@@ -918,8 +918,9 @@ class Cover(Scene):
         R1=SurroundingRectangle(VGroup(*[Ls[8*i+1] for i in range(8)]))
         R2=SurroundingRectangle(VGroup(*[Ls[8*i+3] for i in range(8)])+
                                 VGroup(*[Ls[8*i+4] for i in range(8)]))
-        A=VGroup(Ls,R1,R2)
-        A.scale(0.8).shift(LEFT*3+DOWN)
+        q=VGroup(*[Text("?",color=ORANGE).move_to(Ls[16+i]) for i in range(6)])
+        A=VGroup(Ls,R1,R2,q)
+        A.shift(DOWN*3+LEFT*2)
         self.add(A)
 
 class Simulate1(MovingCameraScene):
