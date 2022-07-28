@@ -772,6 +772,7 @@ class Lemma3_1(MovingCameraScene):
         self.wait()
 
 # manim -pqh LatinSquare.py Lemma3_2
+# manim -ps LatinSquare.py Lemma3_2
 class Lemma3_2(MovingCameraScene):
     def construct(self):
         self.camera.background_color=GREY_E
@@ -781,6 +782,127 @@ class Lemma3_2(MovingCameraScene):
             for j in range(6):
                 Ls.fill(i+1,j+1,tmp[i-1][j])
         self.add(Ls)
+        self.wait()
+        self.play(*[Ls.txt[i][i].animate.shift((7-i)*RIGHT) for i in range(2,7)])
+        tmp=VGroup(*[Text("7",color=GREY_B).move_to(Ls[i*7+i-8]) for i in range(2,8)])
+        self.play(*[Write(tmp[i]) for i in range(6)])
+        self.wait()
+        self.play(Circumscribe(Ls.txt[2][2]),Circumscribe(Ls.txt[5][5]))
+        self.wait()
+        self.play(*[Unwrite(tmp[i]) for i in range(6)])
+        self.play(*[Ls.txt[i][i].animate.shift((7-i)*LEFT) for i in range(2,7)])
+        self.wait()
+        self.play(Write(Ls.fill(2,7,7)))
+        self.play(Ls.txt[2][7].animate.shift(LEFT*5),
+                  Ls.txt[2][2].animate.shift(RIGHT*5))
+        self.wait()
+        self.play(Write(Ls.fill(3,7,7)))
+        self.play(Ls.txt[3][7].animate.shift(LEFT*4),
+                  Ls.txt[3][3].animate.shift(RIGHT*4))
+        self.wait()
+        self.play(Write(Ls.fill(4,7,7),run_time=0.4))
+        self.play(Ls.txt[4][7].animate(run_time=0.4).shift(LEFT*3),
+                  Ls.txt[4][4].animate(run_time=0.4).shift(RIGHT*3))
+        self.play(Write(Ls.fill(5,7,7),run_time=0.4))
+        self.play(Ls.txt[5][7].animate(run_time=0.4).shift(LEFT*2),
+                  Ls.txt[5][5].animate(run_time=0.4).shift(RIGHT*2))
+        self.wait()
+        self.play(Indicate(Ls.txt[2][2]),Indicate(Ls.txt[5][5]))
+        Ls.build()
+        Ls.save_state()
+        self.play(Ls.txt[2][5].animate.shift(RIGHT*2),
+                  Ls.txt[2][2].animate.shift(LEFT*2))
+        self.wait()
+        self.play(Ls.txt[4][5].animate.shift(RIGHT*2),
+                  Ls.txt[4][4].animate.shift(LEFT*2))
+        self.wait()
+        L=VGroup(*[Dot(color=GRAY_B).move_to(Ls[i*7+13].get_center()+RIGHT*2) for i in range(4)])
+        R=L.copy().shift(RIGHT*1.5)
+        mline=VGroup(*[DashedLine(start=L[i],end=R[i]) for i in range(4)],
+                     Line(start=L[0],end=R[2]),
+                     Line(start=L[3],end=R[0]))
+        self.play(self.camera.frame.animate.shift(RIGHT*2),
+                  FadeIn(VGroup(L,R),shift=LEFT),
+                  Restore(Ls))
+        self.wait()
+        self.play(*[Create(mline[i]) for i in range(4)])
+        self.wait()
+        self.play(*[Create(mline[i]) for i in range(4,6)])
+        self.wait()
+        c=Circle(radius=0.2).move_to(R[3])
+        self.play(GrowFromCenter(c))
+        self.wait()
+        c_=c.copy()
+        for target in [L[3],R[0],L[0],R[2],L[2]]:
+            self.play(c_.animate.move_to(target))
+        self.wait()
+        g1=VGroup(c,c_,L,R,mline)
+        g2=VGroup(Dot(color=GRAY_B).scale(3),
+                 Text("...").shift(1.5*UP),
+                 Text("...").shift(1.6*RIGHT),
+                 Text("...").shift(1.5*DOWN),
+                 Arrow(ORIGIN,UP*1.5,buff=0.2,color=BLUE),
+                 Arrow(RIGHT*1.5,ORIGIN,buff=0.2,color=BLUE),
+                 Arrow(DOWN*1.5,ORIGIN,buff=0.2,color=BLUE)).move_to(g1.get_center()+DOWN*3).scale(0.6)
+        self.play(FadeIn(g2,shift=UP),
+                  g1.animate.shift(UP))
+        self.wait()
+        self.play(FadeOut(VGroup(g1,g2),shift=RIGHT),
+                  self.camera.frame.animate.shift(LEFT*2),
+                  Ls.txt[2][5].animate.shift(RIGHT*2),
+                  Ls.txt[2][2].animate.shift(LEFT*2),
+                  Ls.txt[4][5].animate.shift(RIGHT*2),
+                  Ls.txt[4][4].animate.shift(LEFT*2)
+                )
+        self.play(Write(Ls.fill(6,7,7),run_time=0.4))
+        self.play(Ls.txt[6][7].animate(run_time=0.4).shift(LEFT),
+                  Ls.txt[6][6].animate(run_time=0.4).shift(RIGHT))
+        self.play(Write(Ls.fill(7,7,7),run_time=0.4))
+        self.wait()
+        tmp=[0,7,3,1,6,5,2,4]
+        self.play(*[Write(Ls.fill(1,i,tmp[i])) for i in range(1,8)])
+        self.wait()
+
+class Lemma3_3(MovingCameraScene):
+    def construct(self):
+        self.camera.background_color=GREY_E
+        Ls=LatinSquare(7)
+        tmp=[[7,3,1,6,5,2,4],
+             [2,7,4,1,3,5,6],
+             [5,6,7,4,2,3,1],
+             [1,2,3,7,6,4,5],
+             [6,4,5,2,7,1,3],
+             [3,1,6,5,4,7,2],
+             [4,5,2,3,1,6,7]]
+        for i in range(7):
+            for j in range(7):
+                Ls.fill(i+1,j+1,tmp[i][j])
+        self.add(Ls)
+        Ls.build()
+        self.play(Ls.C[1].animate.shift(RIGHT),
+                  Ls.C[2].animate.shift(RIGHT*3),
+                  Ls.C[5].animate.shift(LEFT*4))
+        self.play(Ls.L[3].animate.shift(DOWN*3),
+                  Ls.L[5].animate.shift(UP*2),
+                  Ls.L[6].animate.shift(UP))
+        self.wait()
+        x,y=[2,2,5,5,6,7],[1,2,2,3,4,1]
+        self.play(*[Transform(Ls.txt[x[i]][y[i]],
+                              Ls.txt[x[i]][y[i]].copy().set_color(BLUE)) for i in range(6)])
+        self.wait()
+        self.play(self.camera.frame.animate.shift(UP*10))               
+
+# manim -ps LatinSquare.py Test
+class Test(Scene):
+    def construct(self):
+        g=VGroup(Dot(color=GRAY_B).scale(3),
+                 Text("...").shift(1.5*UP),
+                 Text("...").shift(1.6*RIGHT),
+                 Text("...").shift(1.5*DOWN),
+                 Arrow(ORIGIN,UP*1.5,buff=0.2,color=BLUE),
+                 Arrow(RIGHT*1.5,ORIGIN,buff=0.2,color=BLUE),
+                 Arrow(DOWN*1.5,ORIGIN,buff=0.2,color=BLUE)).move_to(RIGHT*4+DOWN*2).scale(0.8)
+        self.add(g)
 
 class Cover(Scene):
     def construct(self):
