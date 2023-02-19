@@ -1,35 +1,37 @@
 from manim import *
+import numpy as np
+import random as rd
 
 l = [ 'A' , *[ str(i) for i in range(2,11)] , 'J' , 'Q' , 'K' ]
 
-class Card(Rectangle):
+class Card(VGroup):
     def __init__(
         self,
         value: str = "A",
         height: float = 1.5,
-        width: float = 1.5*0.65,
+        width: float = 1.5 * 0.65,
         num: int = 1,
         back: bool = 0,
         **kwargs,
     ):
-        
+        super().__init__(**kwargs)
         if(back):
-            super().__init__(height = height,
-                             width = width,
-                             color = BLUE,
-                             fill_opacity = 1.0,
-                             **kwargs)
-            x = Rectangle(height = height,
-                          width = width,
-                          color = WHITE)
+            x = RoundedRectangle(height = height,
+                                  width = width,
+                                  color = BLUE,
+                                  fill_opacity = 1.0,
+                                  stroke_color = WHITE,
+                                  corner_radius = 0.1,
+                                  **kwargs)
             ds_m = MathTex(r"\mathbb{M}", fill_color="#343434")
             self.add(x,ds_m)
         else:
-            super().__init__(height = height,
-                             width = width,
-                             color = WHITE,
-                             fill_opacity = 1.0,
-                             **kwargs)
+            b = RoundedRectangle(height = height,
+                                 width = width,
+                                 color = WHITE,
+                                 fill_opacity = 1.0,
+                                 corner_radius = 0.1,
+                                 **kwargs)
             co = BLACK
             if (num > 2):
                 co = RED
@@ -57,7 +59,7 @@ class Card(Rectangle):
             x1 = x.copy().move_to(v.get_center()+DOWN*0.23)
             x2 = x1.copy().rotate(about_point=ORIGIN,
                             angle=PI)
-            self.add(v,v_,x1,x2)
+            self.add(b,v,v_,x1,x2)
 
 class Cover(Scene):
     def construct(self):
@@ -81,9 +83,9 @@ class Cover(Scene):
             else:
                 v2.add(c)
         Random=Text("Random?",
-                      font_size=200,
-                      color=ORANGE,
-                      font="Comic Sans MS")
+                      font_size = 200,
+                      color = ORANGE,
+                      font = "Comic Sans MS")
         self.add(Random)
         self.wait()
         self.play(FadeOut(Random,shift=UP))
@@ -100,7 +102,7 @@ def Build(l1,l2):
 class Landlord(Scene):
     def construct(self):
         self.camera.background_color=GREY_E
-        self.play(Create(NumberPlane()))
+        #self.play(Create(NumberPlane()))
         vs   = ['Q','3','3','2','A','A','10','8','7','6','5','4','4','4','4']
         nums = [ 5 , 5 , 5 , 3 , 3 , 2 , 3  , 1 , 2 , 1 , 3 , 1 , 3 , 2 , 4 ]
         P1 = VGroup(*[Card(value = vs[i],
@@ -305,8 +307,8 @@ class P2(MovingCameraScene):
                     c1.animate().shift(UP*8))
         self.wait()
         self.play(VGroup(c1,c2).animate().shift(UP*8))
+        c2.save_state()
         self.wait()
-        
         def swap(mob,tar):
             return MoveAlongPath(mobject=mob,
                                  path=ArcBetweenPoints(start=mob.get_center(),end=tar,angle=PI),
@@ -317,27 +319,120 @@ class P2(MovingCameraScene):
         for i in range(0,len(mob)):
             self.play(*[swap(c2[mob[i][j]-1],pos[tar[i][j]-1]) for j in range(0,len(mob[i]))])
         self.wait()
-        a = Arrow().rotate(angle=-PI/2).move_to(DOWN*2).scale(0.5)
-        self.play(Create(a))
+        a = Arrow().rotate(angle=-PI/2).move_to(DOWN*2)
+        self.play(GrowArrow(a))
         c3 = Build(['2','3','5','4','A'],[1,1,1,1,1]).arrange().move_to(DOWN*2)
         self.play(VGroup(c2,a).animate().shift(UP*2),
-                  FadeIn(c3,shift=UP))
+                  FadeIn(c3,shift=UP*2))
         IsTrue = Text("你对了吗？",color=GREEN).move_to(DOWN*2+RIGHT*5).scale(0.8)
         self.play(Write(IsTrue))
         self.wait()
-        self.play(VGroup(man,c2,a,c3,IsTrue).animate().shift(LEFT*14))
-        t1 = Text("随机性并不源于事件本身是否发生，\n而只是描述观察者对该事件的知识状态。\n同一件事情\n对于知情者而言就是「确定事件」，\n对于不知情者而言就是「随机事件」",
-                  t2c={"随机性":ORANGE,"观察者":RED,"知识状态":BLUE,"确定事件":BLUE,"随机事件":BLUE}).scale(0.8).shift(LEFT*0.5)
-        self.play(Write(t1))
+
+class P2_sup(MovingCameraScene):
+    def construct(self):
+        bg = ImageMobject("tmp").scale(0.75)
+        self.add(bg)
+        self.wait()
+        x = Dot([2.3,1.5,0])
+        c2 = VGroup(*[Card(back=1) for i in range(0,5)]).arrange()
+        self.play(AnimationGroup(*[
+            Create(CurvedArrow(x.get_center(),
+                               c2[i].get_center()))
+            for i in range(3)
+        ]))
+        self.wait()
+
+class P2_2(MovingCameraScene):
+    def construct(self):
+        self.camera.background_color=GREY_E
+        self.wait()
+        t1 = Text("同一事件\n对于知情者而言就是「确定事件」，\n对于不知情者而言就是「随机事件」。",
+                  t2c={"确定事件":BLUE,"随机事件":BLUE}).scale(0.8).move_to(LEFT*5+UP,LEFT)
+        self.play(Write(t1),run_time=3)
+        self.wait()
+        t2 = Text("随机性并不源于事件本身是否发生，\n而只是描述观察者对该事件的知识状态。",
+                  t2c={"随机性":ORANGE,"观察者":RED,"知识状态":BLUE,}).scale(0.8).move_to(LEFT*5+DOWN,LEFT)
+        self.play(Write(t2),run_time=3)
         self.wait()
         Bayes_i = ImageMobject("Bayes").shift(RIGHT*5).scale(2)
         Bayes_n = Text("Bayes",font_size=28).shift(DOWN*2+RIGHT*5)
-        self.play(t1.animate().shift(LEFT),
+        self.play(VGroup(t1,t2).animate().shift(LEFT),
                   FadeIn(Bayes_i,shift=LEFT))
         self.play(Write(Bayes_n))
         self.wait()
-        self.play(FadeOut(Group(Bayes_n,Bayes_i,t1)))
+
+class P3(MovingCameraScene):
+    def construct(self):
+        self.camera.background_color=GREY_E
+
+        bar_style = dict(
+            fill_color=BLUE,
+            fill_opacity=0.8,
+            stroke_color=WHITE,
+            stroke_width=0.1,
+        )
+
+        def get_axes(x_max = 120, y_max = 1.0,
+                     width = 12, height = 100):
+            axes = Axes(
+                x_range = (0,x_max),
+                y_range = (0,y_max,y_max/40),
+                x_length = width,
+                y_length = height,
+                x_axis_config={"tick_size": 0},
+                y_axis_config={"include_numbers": True},
+                tips = False
+            )
+            return axes
+        
+        axes = get_axes().move_to(DOWN*3,DOWN)
+
+        def get_bars(values):
+            x_unit = axes.x_axis.unit_size
+            y_unit = axes.y_axis.unit_size
+            bars = VGroup()
+            for x,value in enumerate(values):
+                bar = Rectangle(width = x_unit,
+                                height = value * y_unit,
+                                **bar_style).move_to(axes.c2p(x, 0),DL)
+                bars.add(bar)
+            bars.set_color_by_gradient(BLUE,GREEN_A)
+            return bars
+        
+        bars = get_bars([0 for i in range(0,120)])
+
+        def update_bars(values):
+            bars_ = get_bars(values)
+            for i,bar in enumerate(bars_):
+                bars[i].target = bar
+            return AnimationGroup(*[
+                MoveToTarget(bar,rate_functions=smooth)
+                for bar in bars
+            ])
+
+        self.play(Create(axes))
         self.wait()
+
+        for i in range(4):
+            x = [rd.randint(1,1000) for _ in range(120)]
+            s = 0
+            for i in x:
+                s += i
+            for i in range(120):
+                x[i]/=s
+            self.play(update_bars(x))
+            self.wait()
+        self.play(update_bars([1/120 for _ in range(120)]))
+        self.wait()
+        t1 = Text("均匀概率分布",font_size=72).set_color_by_gradient(BLUE,GREEN_A).set_stroke(WHITE).shift(UP)
+        t2 = Text("Uniform Distribution",font="Comic Sans MS").next_to(t1,DOWN).set_color_by_gradient(BLUE,GREEN_A).set_stroke(WHITE)
+        self.play(Write(t1),Write(t2))
+        self.wait()
+
+class Test(Scene):
+    def construct(self):
+        x = Card()
+        self.add(x)
 
 # manim -ps Shuffle.py
 # manim -pql Shuffle.py
